@@ -1,296 +1,390 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Online Dice</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Titan+One&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Titan One', sans-serif;
-      line-height: 1.5; color: #f4f8ff;
-      background: #42b0f5;
-    }
-    .titan-one-regular {
-      font-family: 'Titan One', sans-serif;
-      font-weight: 400;
-      font-style: normal;
-    }
-    .page {
-      min-height: 100vh;
-      background: #42b0f5;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 30px 16px 40px;
-      position: relative; overflow: hidden;
-    }
-    .bg-pattern {
-      position: absolute; inset: 0; opacity: 0.13; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Crect x='8' y='8' width='44' height='44' rx='10' fill='none' stroke='%230066bb' stroke-width='2.5'/%3E%3Ccircle cx='19' cy='19' r='4' fill='%230066bb'/%3E%3Ccircle cx='41' cy='19' r='4' fill='%230066bb'/%3E%3Ccircle cx='19' cy='41' r='4' fill='%230066bb'/%3E%3Ccircle cx='41' cy='41' r='4' fill='%230066bb'/%3E%3Ccircle cx='30' cy='30' r='4' fill='%230066bb'/%3E%3Crect x='90' y='90' width='44' height='44' rx='10' fill='none' stroke='%230066bb' stroke-width='2.5'/%3E%3Ccircle cx='101' cy='101' r='4' fill='%230066bb'/%3E%3Ccircle cx='123' cy='101' r='4' fill='%230066bb'/%3E%3Ccircle cx='101' cy='123' r='4' fill='%230066bb'/%3E%3Ccircle cx='123' cy='123' r='4' fill='%230066bb'/%3E%3Crect x='90' y='8' width='44' height='44' rx='10' fill='none' stroke='%230066bb' stroke-width='2.5'/%3E%3Ccircle cx='112' cy='30' r='4' fill='%230066bb'/%3E%3Crect x='8' y='90' width='44' height='44' rx='10' fill='none' stroke='%230066bb' stroke-width='2.5'/%3E%3Ccircle cx='30' cy='101' r='4' fill='%230066bb'/%3E%3Ccircle cx='30' cy='123' r='4' fill='%230066bb'/%3E%3C/svg%3E");
-    }
-    .logo {
-      font-family: 'Titan One', sans-serif;
-      font-size: 56px; color: #ffffff;
-      -webkit-text-stroke: 1px #0c68b8;
-      text-shadow: none;
-      letter-spacing: 4px; text-transform: uppercase;
-      margin-bottom: 8px; position: relative; z-index: 1;
-    }
-    .tagline {
-      font-family: 'Titan One', sans-serif;
-      color: #edf4ff; font-size: 14px; letter-spacing: 1.2px;
-      text-transform: none; margin-bottom: 28px;
-      -webkit-text-stroke: 0.8px #0c68b8;
-      text-shadow: none; position: relative; z-index: 1;
-    }
-    .card {
-      background: rgba(50,140,210,0.92);
-      border: 2px solid rgba(140,200,250,0.7);
-      border-radius: 20px; padding: 24px 24px 20px;
-      width: 100%; max-width: 440px;
-      position: relative; z-index: 1;
-      box-shadow: 0 8px 32px rgba(0,60,140,0.3);
-    }
-    .card-title {
-      font-family: 'Titan One', sans-serif;
-      color: #f7fbff; font-size: 22px; letter-spacing: 1px;
-      text-align: center; text-transform: none;
-      margin-bottom: 18px; -webkit-text-stroke: 0.8px #0c68b8;
-      text-shadow:
-        1.3px 1.3px 0 #0c68b8,
-        -1.3px 1.3px 0 #0c68b8,
-        1.3px -1.3px 0 #0c68b8,
-        -1.3px -1.3px 0 #0c68b8;
-    }
-    .selects { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .selects select {
-      flex: 1 1 140px; min-width: 140px;
-      background: #ffffff;
-      border: 1px solid #3a92dd;
-      border-radius: 14px; padding: 12px 40px 12px 14px; font-size: 15px;
-      font-family: 'Titan One', sans-serif;
-      color: #1e3448; letter-spacing: 0.1px; text-transform: none; cursor: pointer;
-      box-shadow: inset 0 1px 3px rgba(255,255,255,0.95), 0 4px 10px rgba(0,0,0,0.06);
-      appearance: none; -webkit-appearance: none; -moz-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%233a92dd' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center; background-size: 12px 7px;
-    }
-    .selects select:focus {
-      outline: none; border-color: #3d99ff;
-      box-shadow: 0 0 0 4px rgba(61, 153, 255, 0.18);
-    }
-    .rolling-text {
-      font-family: 'Titan One', sans-serif;
-      color: #fff5b8; font-size: 20px; letter-spacing: 0.8px;
-      text-align: center; text-transform: none;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.18);
-      min-height: 32px; margin-bottom: 12px;
-    }
-    .dice-row {
-      display: flex; justify-content: center;
-      gap: 12px; flex-wrap: wrap;
-      margin-bottom: 20px; min-height: 90px; align-items: center;
-    }
-    .die {
-      width: 82px; height: 82px; border-radius: 16px;
-      border: 4px solid white; display: flex;
-      align-items: center; justify-content: center;
-      box-shadow: 0 5px 0 rgba(0,0,0,0.22), 0 7px 14px rgba(0,0,0,0.15);
-    }
-    .die.blank {
-      background: rgba(255,255,255,0.88) !important;
-      box-shadow: 0 5px 0 rgba(180,180,180,0.4), 0 7px 14px rgba(0,0,0,0.08) !important;
-      animation: diePulse 0.45s ease infinite alternate;
-    }
-    .die.blank .dot { background: rgba(190,190,190,0.5); }
-    @keyframes diePulse {
-      from { transform: scale(1) rotate(-2deg); }
-      to   { transform: scale(1.04) rotate(2deg); }
-    }
-    .dot {
-      width: 18px; height: 18px; border-radius: 50%;
-      background: white; opacity: 0.9;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-    }
-    .roll-btn {
-      width: 100%; background: #f9c200; color: #7a4500;
-      border: none; border-radius: 8px; padding: 14px;
-      font-family: 'Titan One', sans-serif; font-size: 20px;
-      letter-spacing: 1px; text-transform: none; cursor: pointer;
-      box-shadow: 0 5px 0 #c87800, 0 7px 12px rgba(0,0,0,0.2);
-      transition: transform 0.1s, box-shadow 0.1s;
-      margin-bottom: 10px; display: block;
-    }
-    .roll-btn:hover { background: #ffd428; }
-    .roll-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #c87800; }
-    .possible { font-family: Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,0.85); text-align: center; }
-    .cr { color: #ff5555; font-weight: bold; }
-    .co { color: #ffaa00; font-weight: bold; }
-    .cy { color: #f9e84a; font-weight: bold; }
-    .cg { color: #66ee66; font-weight: bold; }
-    .cb { color: #aaddff; font-weight: bold; }
-    .cp { color: #dd99ff; font-weight: bold; }
-    .hidden { display: none !important; }
-    @media (max-width: 520px) {
-      .page { padding: 22px 12px 32px; }
-      .logo { font-size: 48px; }
-      .tagline { font-size: 12px; letter-spacing: 3px; margin-bottom: 24px; }
-      .card { padding: 20px 18px 18px; }
-      .card-title { font-size: 20px; }
-      .selects { gap: 10px; }
-      .selects select { width: 100%; flex: 1 1 100%; }
-      .roll-btn { font-size: 18px; padding: 12px; }
-      .die { width: 68px; height: 68px; border-radius: 14px; }
-      .rolling-text { font-size: 20px; }
-      .possible { font-size: 11px; }
-    }
-  </style>
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Meowl Dice 🎲</title>
+
+<link rel="icon" type="image/x-icon" href="images/favicon.ico">
+<link rel="icon" type="image/png" sizes="256x256" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/favicon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+    margin:0;
+    padding:20px;
+
+    font-family:'Luckiest Guy',cursive;
+
+    background-color:var(--theme-bg, #0b0b0b);
+    background-image:url('images/meowl-transparent-backround.png');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+
+    transition:background-color 0.4s ease;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    min-height:100vh;
+
+    color:#fff;
+    -webkit-text-stroke:1px #000;
+    paint-order:stroke fill;
+}
+
+.container{
+    width:100%;
+    max-width:950px;
+    text-align:center;
+}
+
+h1{
+    font-size:3rem;
+    margin-bottom:10px;
+}
+
+.subtext{
+    font-size:1.35rem;
+    margin-bottom:20px;
+    color:#fff;
+    -webkit-text-stroke:1px #000;
+    paint-order:stroke fill;
+}
+
+.section-title{
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.colors{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:35px;
+}
+
+.colors span{
+    padding:8px 14px;
+    border-radius:999px;
+    background:white;
+    font-weight:bold;
+    -webkit-text-stroke:0;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+.red{color:red;}
+.orange{color:orange;}
+.yellow{color:#ffff00;}
+.green{color:green;}
+.blue{color:#0077ff;}
+.purple{color:purple;}
+
+.dice-grid{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    margin-bottom:35px;
+    flex-wrap:nowrap;
+}
+
+.die{
+    width:120px;
+    height:120px;
+    border-radius:22px;
+    border:10px solid white;
+    background:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    box-shadow:0 10px 20px rgba(0,0,0,0.15);
+    transition:background 0.08s linear, transform 0.08s linear;
+}
+
+.center-dot{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:white;
+    box-shadow:0 0 10px rgba(255,255,255,0.95);
+}
+
+#rollBtn{
+    padding:14px 34px;
+    font-family:'Luckiest Guy',cursive;
+    font-size:1.1rem;
+    font-weight:bold;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    background:#1f7cff;
+    color:white;
+    -webkit-text-stroke:0;
+    transition:0.2s;
+}
+
+#rollBtn:hover{
+    transform:scale(1.05);
+}
+
+.logo{
+    max-width:400px;
+    width:100%;
+    height:auto;
+    margin-bottom:10px;
+}
+
+footer{
+    margin-top:40px;
+    font-size:0.9rem;
+    color:#fff;
+    -webkit-text-stroke:1px #000;
+    paint-order:stroke fill;
+}
+
+@media(max-width:700px){
+    .dice-grid{ flex-wrap:wrap; }
+    .die{ width:100px; height:100px; }
+}
+
+.theme-switcher{
+    margin-bottom:25px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+}
+
+.theme-switcher .section-title{ margin-bottom:0; }
+
+#themeSelect{
+    font-family:'Luckiest Guy',cursive;
+    font-size:1rem;
+    padding:8px 14px;
+    border-radius:10px;
+    border:2px solid rgba(255,255,255,0.5);
+    background:#222;
+    color:#fff;
+    cursor:pointer;
+    outline:none;
+    transition:border-color 0.2s;
+}
+
+#themeSelect:hover,
+#themeSelect:focus{ border-color:#fff; }
+
+#themeSelect option{ background:#222; color:#fff; }
+
+</style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="bg-pattern"></div>
-    <div id="logo" class="logo">Online Dice</div>
-    <div id="tagline" class="tagline">Virtual Dice Simulator</div>
-    <div class="card">
-      <div id="card-title" class="card-title">ROLL COLOR DICE</div>
-      <div id="selects" class="selects">
-        <select id="dice-select" onchange="changeDiceCount(this.value)">
-          <option value="1">1 DICE</option>
-          <option value="2">2 DICE</option>
-          <option value="3">3 DICE</option>
-          <option value="4" selected>4 DICE</option>
-          <option value="5">5 DICE</option>
-          <option value="6">6 DICE</option>
-        </select>
-      </div>
-      <div class="rolling-text" id="rolling-text"></div>
-      <div class="dice-row" id="dice-row"></div>
-      <button class="roll-btn" id="roll-btn" onclick="rollAll()">Roll Again !</button>
-      <div id="possible" class="possible">
-        Possible colors are: <span class="cr">Red</span> <span class="co">Orange</span>, <span class="cy">Yellow</span>, <span class="cg">Green</span> <span class="cb">Blue</span> and <span class="cp">Purple</span>
-      </div>
+
+<div class="container">
+
+    <img src="images/Meowl-Dice-Logo.png" alt="Meowl Dice" class="logo">
+
+    <div id="infoSection">
+
+        <div class="theme-switcher">
+            <div class="section-title">Background Theme</div>
+            <select id="themeSelect">
+                <option value="black">Black</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="red">Red</option>
+                <option value="bronze">Bronze</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+            </select>
+        </div>
+
+        <div class="subtext">
+            4 Color Dice • Secure Random Rolls
+        </div>
+
+        <div class="section-title">
+            Possible Colors
+        </div>
+
+        <div class="colors">
+            <span class="red">Red</span>
+            <span class="orange">Orange</span>
+            <span class="yellow">Yellow</span>
+            <span class="green">Green</span>
+            <span class="blue">Blue</span>
+            <span class="purple">Purple</span>
+        </div>
+
     </div>
-  </div>
 
-  <script>
-    const SUPABASE_URL = 'https://uxwjbfxtgrpzghokaalq.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_0ucBltPjUhSqrrpU82_URg_BkFVS1oj';
-    const TABLE = 'dice color';
+    <div class="dice-grid">
+        <div class="die" id="die1"><div class="center-dot"></div></div>
+        <div class="die" id="die2"><div class="center-dot"></div></div>
+        <div class="die" id="die3"><div class="center-dot"></div></div>
+        <div class="die" id="die4"><div class="center-dot"></div></div>
+    </div>
 
-    const ALL_COLORS = [
-      { name: 'Red',    bg: '#e82020', shadow: '#a00000' },
-      { name: 'Orange', bg: '#ff8800', shadow: '#b85c00' },
-      { name: 'Yellow', bg: '#f9c200', shadow: '#b08000' },
-      { name: 'Green',  bg: '#1aaa1a', shadow: '#0a6e0a' },
-      { name: 'Blue',   bg: '#2277dd', shadow: '#0a4a99' },
-      { name: 'Purple', bg: '#8833bb', shadow: '#551188' },
-    ];
+    <button id="rollBtn">ROLL 🎲</button>
 
-    const ROLLING_TEXTS = [
-      'AMAZING!',
-      "LET'S ROLL!",
-      'GOOD LUCK!',
-      'WHAT COLOR WILL IT BE?',
-      'COLOR ME SURPRISED!',
-      "LET'S GO!",
-      'FEELING LUCKY?',
-      'ROLLING...',
-    ];
+    <footer>© 2026 MEOWL-DICE.COM</footer>
 
-    let diceCount = 4;
-    let currentColors = [];
-    let rolling = false;
-    let bannedColor = null;
+</div>
 
-    async function fetchBannedColor() {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${encodeURIComponent(TABLE)}?select=color&limit=1`, {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
+<script>
+(function(){
+    var SUPABASE_URL = 'https://uxwjbfxtgrpzghokaalq.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_0ucBltPjUhSqrrpU82_URg_BkFVS1oj';
+    var TABLE = 'dice color';
+
+    var dieIds = ['die1','die2','die3','die4'];
+    var dice = dieIds.map(function(id){ return document.getElementById(id); });
+    var rollBtn = document.getElementById('rollBtn');
+
+    var rollSound = new Audio('https://meowl-dice.com/audio/roll.ogg');
+    var successSound = new Audio('https://meowl-dice.com/audio/success.ogg');
+    rollSound.volume = 0.45;
+    successSound.volume = 0.8;
+
+    var allColors = ['red','orange','yellow','green','blue','purple'];
+    var bannedColor = null;
+
+    // Color name in Supabase is capitalized (Red, Orange...), CSS uses lowercase
+    async function fetchBannedColor(){
+        try {
+            var res = await fetch(
+                SUPABASE_URL + '/rest/v1/' + encodeURIComponent(TABLE) + '?select=color&limit=1',
+                { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+            );
+            var data = await res.json();
+            if(data && data.length > 0 && data[0].color){
+                bannedColor = data[0].color.toLowerCase();
+            } else {
+                bannedColor = null;
+            }
+        } catch(e){
+            bannedColor = null;
+        }
+    }
+
+    function getAvailableColors(){
+        var available = allColors.filter(function(c){ return c !== bannedColor; });
+        return available.length > 0 ? available : allColors;
+    }
+
+    function secureRandom(){
+        var a = new Uint32Array(1);
+        crypto.getRandomValues(a);
+        return a[0];
+    }
+
+    function randInt(max){ return secureRandom() % max; }
+
+    function pickColors(){
+        var available = getAvailableColors();
+        var result = [];
+        for(var k = 0; k < 4; k++){
+            result.push(available[randInt(available.length)]);
+        }
+        return result;
+    }
+
+    function shake(){
+        dice.forEach(function(d){
+            d.style.background = '#d9d9d9';
+            d.style.transform = 'rotate(' + randInt(360) + 'deg)';
         });
-        const data = await res.json();
-        if (data && data.length > 0 && data[0].color) {
-          bannedColor = data[0].color;
-        } else {
-          bannedColor = null;
+    }
+
+    function setFinalColors(chosen){
+        dice.forEach(function(d, i){
+            d.style.background = chosen[i];
+            d.style.transform = 'rotate(0deg)';
+        });
+    }
+
+    function fadeOutRollSound(){
+        return new Promise(function(resolve){
+            var fade = setInterval(function(){
+                if(rollSound.volume > 0.05){
+                    rollSound.volume -= 0.05;
+                } else {
+                    clearInterval(fade);
+                    rollSound.pause();
+                    rollSound.currentTime = 0;
+                    rollSound.volume = 0.45;
+                    resolve();
+                }
+            }, 30);
+        });
+    }
+
+    var rolling = false;
+
+    async function roll(){
+        if(rolling) return;
+        rolling = true;
+        rollBtn.disabled = true;
+
+        // Fetch latest banned color while animation plays
+        var banFetch = fetchBannedColor();
+
+        rollSound.pause();
+        rollSound.currentTime = 0;
+        rollSound.play();
+
+        for(var i = 0; i < 12; i++){
+            shake();
+            await new Promise(function(r){ setTimeout(r, 60); });
         }
-      } catch (e) {
-        bannedColor = null;
-      }
-    }
 
-    function getAvailableColors() {
-      const available = ALL_COLORS.filter(c => c.name !== bannedColor);
-      // Fallback to all colors if somehow all are banned
-      return available.length > 0 ? available : ALL_COLORS;
-    }
+        // Make sure ban fetch is done before picking colors
+        await banFetch;
 
-    function rnd() {
-      const available = getAvailableColors();
-      return available[Math.floor(Math.random() * available.length)];
-    }
+        var chosen = pickColors();
+        setFinalColors(chosen);
 
-    function changeDiceCount(val) {
-      diceCount = parseInt(val);
-      currentColors = Array.from({length: diceCount}, rnd);
-      renderDice(false);
-    }
+        successSound.currentTime = 0;
+        successSound.play();
+        fadeOutRollSound();
 
-    function renderDice(isRolling) {
-      const row = document.getElementById('dice-row');
-      row.innerHTML = '';
-      for (let i = 0; i < diceCount; i++) {
-        const c = currentColors[i] || ALL_COLORS[0];
-        const die = document.createElement('div');
-        die.className = 'die' + (isRolling ? ' blank' : '');
-        if (!isRolling) {
-          die.style.background = c.bg;
-          die.style.boxShadow = `0 5px 0 ${c.shadow}, 0 7px 14px rgba(0,0,0,0.18)`;
-        }
-        const dot = document.createElement('div');
-        dot.className = 'dot';
-        die.appendChild(dot);
-        row.appendChild(die);
-      }
-    }
-
-    function setRollingUI(isRolling) {
-      ['logo','tagline','card-title','selects','roll-btn','possible'].forEach(id => {
-        document.getElementById(id).classList.toggle('hidden', isRolling);
-      });
-    }
-
-    async function rollAll() {
-      if (rolling) return;
-      rolling = true;
-      setRollingUI(true);
-
-      const pick = ROLLING_TEXTS[Math.floor(Math.random() * ROLLING_TEXTS.length)];
-      document.getElementById('rolling-text').textContent = pick;
-      renderDice(true);
-
-      // Fetch the latest banned color while the animation plays
-      await fetchBannedColor();
-
-      setTimeout(() => {
-        currentColors = Array.from({length: diceCount}, rnd);
-        renderDice(false);
-        document.getElementById('rolling-text').textContent = '';
-        setRollingUI(false);
         rolling = false;
-      }, 1500);
+        rollBtn.disabled = false;
     }
 
-    // Init
-    fetchBannedColor().then(() => {
-      currentColors = Array.from({length: diceCount}, rnd);
-      renderDice(false);
+    rollBtn.addEventListener('click', roll);
+
+    // Init: fetch banned color then do first roll
+    fetchBannedColor().then(function(){ roll(); });
+
+    // Theme switcher
+    var themeColors = {
+        blue:'#0a3d91', green:'#0d5c2e', red:'#8b1a1a',
+        black:'#0b0b0b', bronze:'#6b3a2a', silver:'#71797E', gold:'#8B7500'
+    };
+
+    var themeSelect = document.getElementById('themeSelect');
+    var savedTheme = localStorage.getItem('meowl-theme') || 'black';
+    applyTheme(savedTheme);
+
+    themeSelect.addEventListener('change', function(){
+        applyTheme(themeSelect.value);
     });
-  </script>
-</body>
-</html>
+
+    function applyTheme(name){
+        document.body.style.setProperty('--theme-bg', themeColors[name] || themeColors.black);
+        themeSelect.value = name;
+        localStorage.setItem('meowl-theme', name);
+    }
+})();
+</script>
+
+</body></html>
